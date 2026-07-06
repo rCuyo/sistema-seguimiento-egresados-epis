@@ -4,7 +4,7 @@ import { Suspense, useState } from "react"
 import { signIn }              from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { GraduationCap, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { GraduationCap, Loader2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input }  from "@/components/ui/input"
 import { Label }  from "@/components/ui/label"
@@ -106,6 +106,14 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm space-y-6">
+
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver al inicio
+        </Link>
 
         {/* Logo */}
         <div className="text-center">
