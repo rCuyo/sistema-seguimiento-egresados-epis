@@ -47,7 +47,14 @@ export default async function HomePage() {
     }
   }
 
-  const stats = await getLandingStats()
+  const stats = await getLandingStats().catch(() => ({
+    totalGraduates: 0,
+    totalCompanies: 0,
+    activeJobs:     0,
+    totalSchools:   0,
+    totalResponses: 0,
+    employmentRate: 0,
+  }))
 
   return (
     <AuthModalProvider>
