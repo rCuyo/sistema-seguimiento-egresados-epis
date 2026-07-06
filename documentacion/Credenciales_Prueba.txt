@@ -1,0 +1,122 @@
+CREDENCIALES DE PRUEBA — Sistema de Seguimiento al Egresado
+E.P. Ingeniería de Sistemas · UNA Puno
+============================================================
+
+ADMINISTRADOR
+─────────────────────────────────────
+Correo     : admin@unap.edu.pe
+Contraseña : admin123
+Rol        : ADMIN
+Dashboard  : /admin
+
+============================================================
+
+DIRECTOR DE ESCUELA PROFESIONAL
+─────────────────────────────────────
+Correo     : director@epis.edu.pe
+Contraseña : director123
+Rol        : DIRECTOR
+Dashboard  : /director
+Acceso     : /director (dashboard), /director/analitica, /director/reportes
+
+============================================================
+
+COORDINADOR DE PRÁCTICAS PROFESIONALES
+─────────────────────────────────────
+Correo     : coordinador@epis.edu.pe
+Contraseña : coordinador123
+Rol        : PRACTICE_COORDINATOR
+Acceso     : /coordinador (dashboard), /coordinador/encuestas, /coordinador/practicas
+
+============================================================
+
+EGRESADOS (todos usan la misma contraseña: password123)
+────────────────────────────────────────────────────────────────────────────────
+
+1. Juan Carlos Mamani Quispe
+   Correo       : juan.mamani@gmail.com
+   Contraseña   : password123
+   Carrera      : Ingeniería de Sistemas
+   Egreso       : 2021
+   Estado       : Empleado — Desarrollador Full Stack en Tech Solutions SAC
+   Ciudad       : Lima
+   Postulaciones: 1 (estado: INTERVIEW)
+   Encuesta     : Respondida
+
+2. María Elena Quispe Condori
+   Correo       : maria.quispe@gmail.com
+   Contraseña   : password123
+   Carrera      : Ingeniería de Sistemas
+   Egreso       : 2022
+   Estado       : Empleada — Analista de Datos en Gobierno Regional Puno
+   Ciudad       : Puno
+   Postulaciones: 1 (estado: REVIEWED)
+   Encuesta     : Respondida
+
+3. Pedro Alberto Huanca Flores
+   Correo       : pedro.huanca@gmail.com
+   Contraseña   : password123
+   Carrera      : Ingeniería Civil
+   Egreso       : 2020
+   Estado       : Empleado — Supervisor de Obras en Constructora Andina SRL
+   Ciudad       : Juliaca
+   Postulaciones: 1 (estado: PENDING)
+   Encuesta     : Sin responder
+
+4. Rosa Inés Coila Apaza
+   Correo       : rosa.coila@gmail.com
+   Contraseña   : password123
+   Carrera      : Contabilidad
+   Egreso       : 2023
+   Estado       : Buscando empleo (SEEKING)
+   Ciudad       : Puno
+   Postulaciones: Ninguna
+   Encuesta     : Sin responder
+
+5. Carlos Efraín Lupaca Mamani
+   Correo       : carlos.lupaca@gmail.com
+   Contraseña   : password123
+   Carrera      : Administración de Empresas
+   Egreso       : 2019
+   Estado       : Independiente — Gerente en Inversiones Lupaca EIRL
+   Ciudad       : Juliaca
+   Postulaciones: Ninguna
+   Encuesta     : Respondida
+
+6. Lucía Beatriz Ccama Vargas
+   Correo       : lucia.ccama@gmail.com
+   Contraseña   : password123
+   Carrera      : Educación Primaria
+   Egreso       : 2022
+   Estado       : Empleada — Docente en I.E. 70548 San Juan Bosco
+   Ciudad       : Puno
+   Postulaciones: Ninguna
+   Encuesta     : Sin responder
+
+7. Félix Augusto Ramos Tito
+   Correo       : felix.ramos@gmail.com
+   Contraseña   : password123
+   Carrera      : Ingeniería de Sistemas
+   Egreso       : 2021
+   Estado       : Estudiando posgrado (STUDYING) — Maestría en IA en la PUCP
+   Ciudad       : Lima
+   Postulaciones: 1 (estado: PENDING)
+   Encuesta     : Sin responder
+
+8. Ana Patricia Velásquez Cruz
+   Correo       : ana.velasquez@gmail.com
+   Contraseña   : password123
+   Carrera      : Trabajo Social
+   Egreso       : 2023
+   Estado       : Empleada — Asistenta Social en Municipalidad Provincial de Puno
+   Ciudad       : Puno
+   Postulaciones: Ninguna
+   Encuesta     : Sin responder
+
+============================================================
+NOTAS
+============================================================
+- Para cargar estos datos ejecutar: npm run seed
+- El seed borra todos los datos existentes antes de insertar.
+- Prisma Studio (visualizador de BD): npx prisma studio
+============================================================

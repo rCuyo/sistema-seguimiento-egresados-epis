@@ -1,0 +1,1185 @@
+---
+title: "Documento de Arquitectura de Software"
+subtitle: "Sistema Web de Seguimiento e Inserción Laboral del Egresado\nEscuela Profesional de Ingeniería de Sistemas\nUniversidad Nacional del Altiplano Puno"
+author: "Equipo de Desarrollo — Comisión de Seguimiento al Egresado\nE.P. Ingeniería de Sistemas · UNA Puno"
+date: "Junio 2026"
+version: "1.0"
+lang: es
+toc: true
+toc-depth: 3
+numbersections: true
+geometry: "top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm"
+fontsize: 12pt
+linestretch: 1.5
+header-includes:
+  - \usepackage{fancyhdr}
+  - \usepackage{booktabs}
+---
+
+\newpage
+
+# Hoja de Control
+
+| Campo | Detalle |
+|---|---|
+| **Título del documento** | Documento de Arquitectura de Software (DA) |
+| **Nombre del sistema** | Sistema Web de Seguimiento e Inserción Laboral del Egresado |
+| **Unidad académica** | E.P. Ingeniería de Sistemas — Universidad Nacional del Altiplano Puno |
+| **Versión del documento** | 1.0 |
+| **Fecha de elaboración** | Junio 2026 |
+| **Estándar de referencia** | ISO/IEC/IEEE 42010:2011 — Architecture Description |
+| **Estado** | Versión inicial — basada en código fuente verificado |
+
+\newpage
+
+# Tabla de Figuras
+
+| N° | Figura | Sección |
+|---|---|---|
+| Figura 1 | Arquitectura General del Sistema (vista de capas) | 4.1 |
+| Figura 2 | Topología de Despliegue Físico | 5.1 |
+| Figura 3 | Modelo de Capas Lógicas | 6.1 |
+| Figura 4 | Flujo de Autenticación y Autorización | 10.4 |
+| Figura 5 | Modelo Entidad-Relación del Sistema | 8.3 |
+| Figura 6 | Flujo de Creación y Respuesta de Encuestas | 15.3 |
+| Figura 7 | Flujo de la Bolsa Laboral | 15.4 |
+| Figura 8 | Relación entre Módulos del Sistema | 15.5 |
+
+# Tabla de Tablas
+
+| N° | Tabla | Sección |
+|---|---|---|
+| Tabla 1 | Atributos de Calidad Arquitectónica | 2.3 |
+| Tabla 2 | Variables de Entorno Requeridas | 5.3 |
+| Tabla 3 | Endpoints de la API REST | 6.3 |
+| Tabla 4 | Enumeraciones del Modelo de Datos | 8.1 |
+| Tabla 5 | Entidades del Modelo de Datos | 8.2 |
+| Tabla 6 | Índices y Restricciones de Integridad | 7.4 |
+| Tabla 7 | Roles del Sistema y sus Privilegios | 10.3 |
+| Tabla 8 | Stack Tecnológico Completo | 13.1 |
+| Tabla 9 | Registro de Decisiones Arquitectónicas | 14.1 |
+| Tabla 10 | Módulos Implementados | 18.1 |
+
+\newpage
+
+# Introducción
+
+## Propósito del Documento
+
+El presente Documento de Arquitectura de Software (DA) describe la arquitectura técnica del **Sistema Web de Seguimiento e Inserción Laboral del Egresado** de la Escuela Profesional de Ingeniería de Sistemas de la Universidad Nacional del Altiplano Puno (en adelante, el Sistema o la Plataforma).
+
+Su propósito es proporcionar una visión completa, precisa y verificable de cómo está construido el sistema: sus componentes, capas, tecnologías, patrones de diseño, modelo de datos, mecanismos de seguridad y decisiones de ingeniería. Este documento sirve como referencia técnica definitiva para el equipo de desarrollo, los docentes revisores, la Comisión de Seguimiento al Egresado y las autoridades académicas de la Escuela Profesional.
+
+El documento ha sido elaborado mediante el análisis exhaustivo del código fuente verificado del sistema, el Reglamento del Sistema de Seguimiento e Inserción Laboral del Egresado (Versión 1, mayo 2026) y el Documento de Requerimientos de Software (SRS v2.1, junio 2026).
+
+## Alcance del Documento
+
+Este documento describe la arquitectura de la versión actualmente implementada del sistema. No describe funcionalidades planificadas para versiones futuras ni módulos no implementados. Toda afirmación técnica contenida en este documento corresponde a código fuente verificado.
+
+El sistema opera exclusivamente para la **Escuela Profesional de Ingeniería de Sistemas** de la Universidad Nacional del Altiplano Puno, aunque su arquitectura de datos contempla extensión futura a otras unidades académicas.
+
+## Audiencia
+
+Este documento está dirigido a:
+
+- **Equipo de desarrollo:** Para comprender decisiones de diseño, patrones empleados y convenciones del proyecto.
+- **Docentes asesores y revisores:** Para evaluar la solidez técnica y académica de la solución implementada.
+- **Comisión de Seguimiento al Egresado:** Para comprender las capacidades y limitaciones del sistema a su cargo.
+- **Autoridades académicas:** Para tomar decisiones sobre evolución, mantenimiento e integración del sistema.
+
+## Definiciones y Acrónimos
+
+| Término | Definición |
+|---|---|
+| **ADR** | Architecture Decision Record — registro de decisión arquitectónica |
+| **API** | Application Programming Interface — interfaz de programación de aplicaciones |
+| **App Router** | Sistema de enrutamiento basado en el sistema de archivos de Next.js 16 |
+| **CUID** | Collision-resistant Unique Identifier — identificador único generado automáticamente |
+| **DA** | Documento de Arquitectura de Software |
+| **EPIS** | Escuela Profesional de Ingeniería de Sistemas |
+| **JWT** | JSON Web Token — estándar para tokens de autenticación sin estado |
+| **ORM** | Object-Relational Mapping — abstracción de base de datos |
+| **RBAC** | Role-Based Access Control — control de acceso basado en roles |
+| **RSC** | React Server Component — componente renderizado en el servidor |
+| **SRS** | Software Requirements Specification — Documento de Requerimientos |
+| **SSR** | Server-Side Rendering — renderizado en el servidor |
+| **UNA Puno** | Universidad Nacional del Altiplano Puno |
+
+## Referencias
+
+- Reglamento del Sistema de Seguimiento e Inserción Laboral del Egresado, E.P. Ingeniería de Sistemas — UNA Puno, Versión 1, Mayo 2026.
+- Documento de Requerimientos de Software (SRS) v2.1 — Sistema Web de Seguimiento e Inserción Laboral del Egresado, Junio 2026.
+- ISO/IEC/IEEE 42010:2011 — Systems and software engineering — Architecture description.
+- Next.js 16 Documentation — Vercel Inc.
+- Prisma 5 Documentation — Prisma Data Inc.
+- NextAuth.js v4 Documentation.
+- Ley N° 29733 — Ley de Protección de Datos Personales del Perú.
+- Ley N° 30220 — Ley Universitaria del Perú.
+
+## Visión General del Documento
+
+El documento se organiza en diecinueve secciones:
+
+- **Secciones 1–3:** Contexto, propósito y alcance.
+- **Secciones 4–6:** Arquitectura general, física y lógica del sistema.
+- **Secciones 7–8:** Arquitectura de datos y modelo de entidades.
+- **Secciones 9–10:** Seguridad, autenticación y control de acceso.
+- **Sección 11:** Analytics y generación de reportes.
+- **Secciones 12–13:** Estructura del proyecto y stack tecnológico.
+- **Sección 14:** Registro de decisiones arquitectónicas.
+- **Secciones 15–16:** Diagramas y flujos de operación.
+- **Secciones 17–19:** Escalabilidad, limitaciones y conclusiones.
+
+\newpage
+
+# Objetivos de la Arquitectura
+
+## Objetivos Institucionales
+
+La arquitectura del sistema está diseñada para dar cumplimiento a los mandatos del Reglamento del Sistema de Seguimiento e Inserción Laboral del Egresado (versión 1, mayo 2026). Los artículos de mayor relevancia arquitectónica son:
+
+- **Art. 5:** Mantener información actualizada de egresados, obtener estadísticas de empleabilidad, fortalecer comunicación institucional y promover la inserción laboral mediante herramientas tecnológicas.
+- **Art. 11:** Garantizar que los egresados puedan registrar y actualizar sus datos y responder encuestas institucionales.
+- **Art. 17:** Soportar la gestión de la bolsa laboral institucional para egresados, bachilleres y titulados.
+- **Art. 18:** Proveer encuestas de seguimiento semestrales y herramientas de análisis estadístico de empleabilidad.
+- **Art. 20:** Implementar una plataforma web centralizada como mecanismo tecnológico principal del sistema de seguimiento.
+- **Art. 12h / Ley N° 29733:** Garantizar la confidencialidad de los datos personales de los egresados y su derecho a rectificación.
+
+## Objetivos Técnicos
+
+1. **Disponibilidad web continua** durante el horario laboral institucional, mediante despliegue en infraestructura cloud.
+2. **Separación estricta de responsabilidades** entre capas de presentación, lógica de negocio y acceso a datos.
+3. **Control de acceso granular** basado en roles (RBAC) a nivel de navegación y a nivel de cada servicio de API.
+4. **Integridad de datos** garantizada mediante restricciones a nivel de base de datos y de lógica de aplicación.
+5. **Extensibilidad** hacia otras unidades académicas sin cambios estructurales en el modelo de datos.
+6. **Exportabilidad de datos** en formatos estándar institucionales (XLSX, CSV, PDF) para informes periódicos.
+
+## Atributos de Calidad
+
+**Tabla 1. Atributos de calidad arquitectónica**
+
+| Atributo | Descripción | Mecanismo de implementación |
+|---|---|---|
+| **Seguridad** | Protección de datos personales y control de acceso | JWT + RBAC + bcrypt + Zod + HTTPS |
+| **Mantenibilidad** | Facilidad de evolución y corrección | Arquitectura en capas + TypeScript end-to-end |
+| **Rendimiento** | Respuesta eficiente a consultas complejas | Queries paralelas + paginación + índices BD |
+| **Escalabilidad** | Capacidad de atender mayor carga o extensión | Arquitectura stateless + modelo de datos extensible |
+| **Disponibilidad** | Acceso continuo durante horario institucional | Cloud deployment + connection pooling |
+| **Usabilidad** | Interfaz accesible en español | shadcn/ui + Tailwind + diseño responsivo |
+| **Conformidad** | Cumplimiento de Ley N° 29733 | Restricciones de acceso + hashing de contraseñas |
+| **Trazabilidad** | Control de cambios en esquema de BD | Prisma Migrate (migraciones versionadas) |
+
+\newpage
+
+# Alcance del Sistema
+
+El Sistema Web de Seguimiento e Inserción Laboral del Egresado es una aplicación web institucional que centraliza tres funciones definidas como obligatorias en el Reglamento vigente:
+
+1. **Registro y seguimiento del egresado:** Gestión del perfil académico, profesional y laboral de los egresados de la Escuela Profesional de Ingeniería de Sistemas.
+
+2. **Encuestas institucionales de seguimiento:** Diseño, distribución y análisis de encuestas semestrales de inserción laboral (Art. 18 del Reglamento).
+
+3. **Bolsa de trabajo institucional:** Publicación y gestión de ofertas laborales para egresados, bachilleres y titulados (Art. 19 del Reglamento).
+
+El sistema adicionalmente provee:
+
+- Panel de analítica estadística con indicadores clave de empleabilidad.
+- Exportación de datos en formatos XLSX, CSV y PDF para informes institucionales.
+- Portal público para visitantes no autenticados (landing institucional y bolsa pública).
+
+**Fuera del alcance de la versión actual:**
+
+- Módulo de gestión de eventos institucionales (modelo de datos definido; sin implementación de API ni interfaz).
+- Panel operativo para el rol de Escuela Profesional (rol técnicamente definido; sin interfaz de usuario).
+- Gestión directa de empresas empleadoras (sin interfaz de alta, edición ni eliminación).
+- Edición del historial de experiencia laboral por el egresado.
+- Carga de archivos (fotografía de perfil y CV en PDF).
+- Recuperación de contraseña por correo electrónico.
+- Notificaciones automáticas.
+- Integración con sistemas académicos externos.
+
+\newpage
+
+# Arquitectura General del Sistema
+
+## Visión de Alto Nivel
+
+El sistema sigue una arquitectura web **monolítica por despliegue y en capas por diseño**, construida sobre Next.js 16 con App Router. La aplicación integra en un único artefacto desplegable tanto el frontend como el backend, comunicándose con una base de datos PostgreSQL externa administrada por Supabase.
+
+**Figura 1. Arquitectura General del Sistema**
+
+```mermaid
+graph TB
+    subgraph CLIENTE["🌐 Cliente (Navegador Web)"]
+        UI["Interfaz de Usuario\nReact 19 / shadcn/ui"]
+    end
+
+    subgraph SERVIDOR["⚙️ Servidor Next.js 16 (App Router)"]
+        direction TB
+        MW["Middleware RBAC\n(next-auth/middleware)"]
+
+        subgraph PRESENTACION["Capa de Presentación"]
+            SC["Server Components\n(RSC - SSR)"]
+            CC["Client Components\n('use client')"]
+            SA["Server Actions\n('use server')"]
+        end
+
+        subgraph API["Capa de API REST"]
+            AR["Route Handlers\n(src/app/api/**)"]
+        end
+
+        subgraph SERVICIOS["Capa de Servicios"]
+            SVC["Services Layer\n(src/lib/services/**)"]
+        end
+
+        subgraph AUTH["Autenticación"]
+            NA["NextAuth v4\nCredentials Provider"]
+            JWT["JWT Strategy\n(sin persistencia en BD)"]
+        end
+    end
+
+    subgraph BD["🗄️ Base de Datos"]
+        PB["PgBouncer\nTransaction Pooler\n(puerto 6543)"]
+        PG[("PostgreSQL\nSupabase\n(cloud)")]
+    end
+
+    UI -->|"HTTPS / fetch()"| MW
+    MW -->|"Rutas protegidas"| SC
+    MW -->|"Rutas protegidas"| AR
+    SC -->|"Queries directas servidor"| SVC
+    CC -->|"fetch('/api/**')"| AR
+    SA -->|"Mutaciones de formulario"| SVC
+    AR -->|"Llamadas a servicios"| SVC
+    SVC -->|"Prisma Client queries"| PB
+    PB -->|"Conexión pooled"| PG
+    NA --> JWT
+    AR -->|"getServerSession()"| NA
+    SC -->|"getServerSession()"| NA
+```
+
+## Estilo Arquitectónico
+
+El sistema implementa los siguientes patrones y estilos arquitectónicos:
+
+- **Arquitectura en capas (Layered Architecture):** Separación estricta en cuatro niveles: presentación, API, servicios y datos. Ninguna capa puede saltarse la inmediatamente inferior.
+- **REST API:** Todos los intercambios de datos entre cliente y servidor siguen el estilo REST, con recursos identificados por URLs y operaciones HTTP estándar.
+- **Server-Side Rendering (SSR):** Las páginas del dashboard se renderizan en el servidor en cada petición (`export const dynamic = "force-dynamic"`), garantizando datos siempre actualizados.
+- **Component-Based UI:** La interfaz está construida con componentes React reutilizables organizados por dominio de negocio.
+- **Service Layer Pattern:** Toda lógica de acceso a datos está encapsulada en funciones de servicio. Las rutas API y los Server Components nunca consultan Prisma directamente.
+
+## Componentes Principales
+
+El sistema se compone de cinco componentes lógicos principales:
+
+1. **Capa de Presentación:** Componentes React organizados en grupos de rutas de Next.js App Router. Incluye Server Components (SSR), Client Components (hidratados en el navegador) y Server Actions (mutaciones de formulario ejecutadas en servidor).
+
+2. **Middleware de Autenticación y Autorización:** Componente transversal que intercepta todas las peticiones HTTP, verifica la existencia de sesión JWT válida y aplica redirecciones por rol antes de que lleguen a cualquier ruta.
+
+3. **Capa de API REST:** Manejadores de ruta Next.js (`route.ts`) organizados bajo `src/app/api/`. Verifican sesión y rol, delegan al servicio correspondiente y serializan la respuesta JSON.
+
+4. **Capa de Servicios:** Módulos TypeScript en `src/lib/services/` que encapsulan todas las operaciones de base de datos mediante el cliente Prisma. Exportan tipos inferidos para uso por las capas superiores.
+
+5. **Capa de Datos:** PostgreSQL administrado por Supabase, accedido mediante el cliente Prisma generado en `src/generated/prisma`, a través del Transaction Pooler de PgBouncer.
+
+\newpage
+
+# Arquitectura Física
+
+## Topología de Despliegue
+
+**Figura 2. Topología de Despliegue Físico**
+
+```mermaid
+graph LR
+    subgraph USUARIO["Usuario Final"]
+        NAV["Navegador Web\n(Chrome / Firefox / Edge / Safari)"]
+    end
+
+    subgraph CLOUD_APP["Plataforma de Despliegue"]
+        NEXT["Servidor Next.js 16\n(Node.js runtime)\nPuerto 3000"]
+    end
+
+    subgraph CLOUD_DB["Supabase Cloud"]
+        POOL["PgBouncer\nTransaction Pooler\npuerto 6543"]
+        PGDB[("PostgreSQL\ninstancia cloud")]
+    end
+
+    NAV -->|"HTTPS"| NEXT
+    NEXT -->|"TCP/pgbouncer=true\nconnection_limit=5"| POOL
+    POOL -->|"conexión administrada"| PGDB
+```
+
+El sistema puede desplegarse en cualquier plataforma compatible con Node.js (Vercel, Railway, Render, VPS propio). La base de datos reside en Supabase Cloud y es accedida exclusivamente a través del Transaction Pooler de PgBouncer, lo que permite escalar el número de instancias de la aplicación sin agotar el límite de conexiones directas de PostgreSQL.
+
+## Infraestructura de Base de Datos
+
+La base de datos utiliza la siguiente configuración de conexión en producción y desarrollo:
+
+| Parámetro | Valor |
+|---|---|
+| **Motor** | PostgreSQL (versión gestionada por Supabase) |
+| **Proveedor de hosting** | Supabase Cloud |
+| **Modo de conexión** | Transaction Pooler (PgBouncer) |
+| **Puerto** | 6543 (transaction mode) |
+| **Parámetro pgbouncer** | `?pgbouncer=true` (deshabilita prepared statements) |
+| **Límite de conexiones por instancia** | `connection_limit=5` |
+| **URL de migración (DIRECT_URL)** | Conexión directa sin pooler (para `prisma migrate`) |
+
+La razón del uso de dos URLs de conexión:
+- `DATABASE_URL` con pooler — para todas las queries de la aplicación en runtime.
+- `DIRECT_URL` sin pooler — exclusivamente para las migraciones de Prisma (`prisma migrate dev/deploy`), que requieren conexión directa ya que las migraciones no son compatibles con el modo transaction de PgBouncer.
+
+## Variables de Entorno
+
+**Tabla 2. Variables de entorno requeridas**
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `DATABASE_URL` | URL de conexión al Transaction Pooler de Supabase | `postgresql://...@pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=5` |
+| `DIRECT_URL` | URL de conexión directa a PostgreSQL (solo para migraciones) | `postgresql://...@db.supabase.co:5432/postgres` |
+| `NEXTAUTH_SECRET` | Clave secreta para firma de tokens JWT | Cadena aleatoria ≥ 32 caracteres |
+| `NEXTAUTH_URL` | URL canónica del sitio desplegado | `http://localhost:3000` |
+
+\newpage
+
+# Arquitectura Lógica
+
+## Capas del Sistema
+
+El sistema implementa una arquitectura de cuatro capas con flujo de dependencias unidireccional descendente:
+
+**Figura 3. Modelo de Capas Lógicas**
+
+```mermaid
+graph TD
+    L1["━━━━━━━━━━━━━━━━━━━━━━━━━\nCAPA 1: PRESENTACIÓN\nServer Components · Client Components\nServer Actions · Páginas Next.js\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+    L2["━━━━━━━━━━━━━━━━━━━━━━━━━\nCAPA 2: API REST\nRoute Handlers (/api/**)\nAutenticación · Autorización · Serialización\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+    L3["━━━━━━━━━━━━━━━━━━━━━━━━━\nCAPA 3: SERVICIOS\nsrc/lib/services/**\nLógica de negocio · Queries Prisma\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+    L4["━━━━━━━━━━━━━━━━━━━━━━━━━\nCAPA 4: DATOS\nPrisma Client + PostgreSQL\nsrc/generated/prisma\n━━━━━━━━━━━━━━━━━━━━━━━━━"]
+
+    L1 -->|"fetch('/api/...')\n(Client Components)"| L2
+    L1 -->|"llamada directa\n(Server Components)"| L3
+    L2 -->|"llama servicios"| L3
+    L3 -->|"Prisma Client"| L4
+```
+
+**Regla de arquitectura fundamental:** Ningún componente, página o route handler puede importar o utilizar el cliente Prisma directamente. Toda interacción con la base de datos debe pasar por la capa de servicios (`src/lib/services/`).
+
+## Grupos de Rutas (Route Groups)
+
+Next.js App Router organiza las páginas del sistema en cuatro grupos de rutas, cada uno con comportamiento y layout propio:
+
+| Grupo | Prefijo URL | Layout | Acceso |
+|---|---|---|---|
+| `(auth)` | `/login`, `/registro` | Sin shell de navegación | Público |
+| `(public)` | `/`, `/empleos` | Layout público | Público |
+| `(dashboard)` | `/admin/**`, `/egresado/**`, `/escuela/**` | `DashboardShell` + `Sidebar` + `Navbar` | Autenticado (por rol) |
+| `api` | `/api/**` | Sin layout | REST (por rol) |
+
+El grupo `(dashboard)` envuelve todas sus rutas en el componente `DashboardShell`, que integra el sidebar de navegación lateral, la barra superior y el área de contenido principal.
+
+## Capa de Servicios
+
+La capa de servicios es el núcleo de la lógica de negocio del sistema. Está compuesta por seis módulos en `src/lib/services/`:
+
+**Tabla 3. Endpoints de la API REST — resumen por dominio**
+
+| Módulo de servicio | Funciones principales | Tipos exportados |
+|---|---|---|
+| `admin-graduates.service.ts` | `listGraduatesForAdmin`, `getGraduateStatsForAdmin`, `getGraduateDetailForAdmin` | `GraduateListItem`, `GraduateDetail`, `GraduateAdminStats` |
+| `analytics.service.ts` | `getFullAnalytics`, `getGlobalKPIs`, `getTopEmployers`, `getApplicationStatusDist`, `getGraduatesForExport` | `FullAnalytics`, `AnalyticsKPIs` |
+| `dashboard.service.ts` | `getGraduateDashboardData` | `GraduateDashboardData` |
+| `graduate.service.ts` | `getGraduateByUserId`, `updateGraduateProfile` | — |
+| `jobs.service.ts` | `listJobsForAdmin`, `createJob`, `listJobsPublic`, `applyToJob`, `getGraduateApplications` | `JobListItem`, `JobDetail`, `GraduateApplication`, `JobStats` |
+| `surveys.service.ts` | `listSurveysForAdmin`, `createSurvey`, `getSurveysForGraduate`, `submitSurveyResponse` | `SurveyListItem`, `SurveyWithQuestions`, `SurveyResults` |
+| `public.service.ts` | `getLandingStats` | `LandingStats` |
+
+Cada servicio exporta al final del archivo los tipos inferidos desde sus funciones, garantizando coherencia de tipos entre capas sin duplicar definiciones.
+
+## Acciones de Servidor
+
+El sistema utiliza Server Actions (`"use server"`) exclusivamente para el registro de nuevos egresados. Las Server Actions se definen en `src/lib/actions/auth.actions.ts` y son invocadas mediante `useActionState` de React desde los formularios de registro:
+
+- `registerGraduate` — para el formulario en página dedicada `/registro`.
+- `registerGraduateModal` — para el formulario modal en la página pública; retorna `{ success: true }` en lugar de redirigir.
+
+Todas las demás mutaciones del sistema utilizan Route Handlers (API REST).
+
+## Capa de Presentación — Rutas API
+
+La API REST del sistema expone 23 endpoints, organizados bajo cuatro prefijos:
+
+| Prefijo | Descripción | Roles con acceso |
+|---|---|---|
+| `/api/auth/[...nextauth]` | Manejador de NextAuth (login/logout/sesión) | Público |
+| `/api/public/schools` | Lista de escuelas profesionales | Público |
+| `/api/graduates/me` | Perfil propio del egresado (GET/PUT) | GRADUATE |
+| `/api/dashboard/graduate` | Datos del dashboard del egresado | GRADUATE |
+| `/api/jobs/**` | Bolsa laboral pública y postulaciones | Público / GRADUATE |
+| `/api/surveys/**` | Encuestas del egresado | GRADUATE |
+| `/api/admin/graduates/**` | Gestión de egresados | ADMIN |
+| `/api/admin/jobs/**` | Administración de bolsa laboral | ADMIN |
+| `/api/admin/surveys/**` | Administración de encuestas | ADMIN, SCHOOL |
+| `/api/admin/applications/**` | Gestión de postulaciones | ADMIN, SCHOOL |
+| `/api/admin/analytics/**` | Analytics y exportaciones | ADMIN, SCHOOL |
+| `/api/admin/reports/pdf` | Generación de reporte PDF | ADMIN, SCHOOL |
+
+\newpage
+
+# Arquitectura de Datos
+
+## Motor de Base de Datos
+
+El sistema utiliza **PostgreSQL** como motor de base de datos relacional, administrado a través de **Supabase** en su modalidad cloud. PostgreSQL fue seleccionado por su robustez para datos relacionales complejos (entidades anidadas, restricciones de integridad, índices compuestos), su compatibilidad con columnas de tipo `Json` (utilizado para respuestas de encuestas y opciones de preguntas) y su soporte nativo en Prisma.
+
+## ORM y Generación de Cliente
+
+El sistema utiliza **Prisma 5.22.0** como capa de abstracción ORM. La configuración notable del generador de cliente es:
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+```
+
+El cliente se genera en `src/generated/prisma` en lugar de la ubicación por defecto (`node_modules/@prisma/client`). Esta decisión permite un control más explícito de la versión generada y facilita el despliegue en entornos que requieren el cliente como parte del código fuente. En consecuencia, **todos los imports del cliente Prisma deben usar `@/generated/prisma`, nunca `@prisma/client`**.
+
+El cliente Prisma se instancia como singleton mediante el patrón estándar para Next.js en `src/lib/prisma.ts`, evitando la creación de múltiples conexiones durante el hot-reload en desarrollo.
+
+El comando `prisma generate` se ejecuta automáticamente vía el hook `postinstall` del `package.json`, garantizando que el cliente se regenere tras cada instalación de dependencias.
+
+## Configuración de Conexión
+
+La configuración del datasource utiliza dos URLs de conexión:
+
+```prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")    // Transaction Pooler — para runtime
+  directUrl = env("DIRECT_URL")      // Conexión directa — para migraciones
+}
+```
+
+Esta configuración dual es necesaria porque PgBouncer en modo transaction no es compatible con el protocolo de migraciones de Prisma (que requiere conexión dedicada de sesión).
+
+## Índices y Restricciones de Integridad
+
+**Tabla 6. Índices y restricciones de integridad definidos en el esquema**
+
+| Entidad | Campo / Combinación | Tipo | Propósito |
+|---|---|---|---|
+| `User` | `email` | UNIQUE | Un correo por usuario |
+| `Faculty` | `code` | UNIQUE | Código único de facultad |
+| `School` | `code` | UNIQUE | Código único de escuela |
+| `Graduate` | `userId` | UNIQUE + INDEX | Un perfil por usuario |
+| `Graduate` | `dni` | UNIQUE | Un DNI por egresado |
+| `Graduate` | `schoolId` | INDEX | Búsquedas/filtros por escuela |
+| `Graduate` | `employmentStatus` | INDEX | Filtros por estado laboral |
+| `Graduate` | `graduationYear` | INDEX | Reportes por año de egreso |
+| `WorkExperience` | `graduateId` | INDEX | Historial laboral por egresado |
+| `SurveyQuestion` | `surveyId` | INDEX | Preguntas de una encuesta |
+| `SurveyResponse` | `(surveyId, graduateId)` | UNIQUE | Respuesta única por egresado por encuesta |
+| `JobOffer` | `isActive` | INDEX | Filtros de bolsa laboral activa |
+| `JobApplication` | `(jobId, graduateId)` | UNIQUE | Postulación única por oferta |
+
+Las restricciones `@@unique` en `SurveyResponse` y `JobApplication` son críticas para la integridad del negocio: garantizan que un egresado no pueda responder la misma encuesta ni postularse a la misma oferta más de una vez, incluso ante fallos en la capa de aplicación o peticiones concurrentes.
+
+\newpage
+
+# Modelo de Datos
+
+## Enumeraciones
+
+**Tabla 4. Enumeraciones del modelo de datos**
+
+| Enumeración | Valores | Descripción |
+|---|---|---|
+| `Role` | `ADMIN`, `GRADUATE`, `SCHOOL` | Rol del usuario en el sistema |
+| `EmploymentStatus` | `EMPLOYED`, `SELF_EMPLOYED`, `UNEMPLOYED`, `SEEKING`, `STUDYING` | Situación laboral del egresado |
+| `JobType` | `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP` | Modalidad de contratación de la oferta |
+
+## Entidades del Sistema
+
+**Tabla 5. Entidades del modelo de datos**
+
+| Entidad | Descripción | Campos clave |
+|---|---|---|
+| `User` | Base de autenticación. Todo acceso está mediado por esta entidad. | `id`, `email` (unique), `password?`, `role`, `isActive` |
+| `Faculty` | Unidad académica de nivel facultad. | `id`, `name`, `code` (unique) |
+| `School` | Programa académico dentro de una facultad. | `id`, `name`, `code` (unique), `facultyId` |
+| `Graduate` | Perfil académico y profesional del egresado. Entidad central del sistema. | `id`, `userId` (unique), `schoolId`, `dni` (unique), `firstName`, `lastName`, `employmentStatus`, `graduationYear`, `degree` |
+| `WorkExperience` | Entrada del historial laboral de un egresado. | `id`, `graduateId`, `company`, `position`, `startDate`, `endDate?`, `isCurrent` |
+| `Survey` | Encuesta institucional creada por el administrador. | `id`, `title`, `schoolId?`, `isGlobal`, `isActive`, `endsAt?` |
+| `SurveyQuestion` | Pregunta individual dentro de una encuesta. | `id`, `surveyId`, `text`, `type`, `options?` (Json), `required`, `order` |
+| `SurveyResponse` | Registro de que un egresado completó una encuesta. | `id`, `surveyId`, `graduateId`, `completedAt` |
+| `SurveyAnswer` | Respuesta a una pregunta específica. | `id`, `responseId`, `questionId`, `value` (Json) |
+| `Company` | Empresa que publica ofertas laborales. | `id`, `name`, `ruc?` (unique), `sector?`, `isVerified` |
+| `JobOffer` | Oferta laboral publicada por una empresa. | `id`, `companyId`, `title`, `type` (JobType), `isActive`, `expiresAt?` |
+| `JobApplication` | Postulación de un egresado a una oferta. | `id`, `jobId`, `graduateId`, `coverLetter?`, `status` (string), `appliedAt` |
+| `Event` | Evento institucional (stub — sin implementación). | `id`, `title`, `date`, `isPublished` |
+
+El campo `SurveyQuestion.type` es un `String` (no enum) que acepta seis valores literales: `"text"`, `"textarea"`, `"single"`, `"multiple"`, `"rating"`, `"yesno"`. Esta decisión permite mayor flexibilidad sin requerir migraciones al agregar nuevos tipos.
+
+El campo `JobApplication.status` es igualmente un `String` (no enum) con valores: `"PENDING"`, `"REVIEWED"`, `"INTERVIEW"`, `"ACCEPTED"`, `"REJECTED"`.
+
+Los campos `SurveyAnswer.value` y `SurveyQuestion.options` son de tipo `Json` para soportar respuestas de distintos tipos (cadenas de texto, números enteros, arreglos de cadenas) sin necesidad de tablas adicionales.
+
+## Relaciones entre Entidades
+
+**Figura 5. Diagrama Entidad-Relación (simplificado)**
+
+```mermaid
+erDiagram
+    User ||--o| Graduate : "tiene (cascade delete)"
+    Faculty ||--o{ School : "contiene"
+    School ||--o{ Graduate : "alberga"
+    School ||--o{ Survey : "tiene encuestas propias"
+    Graduate ||--o{ WorkExperience : "tiene (cascade delete)"
+    Graduate ||--o{ SurveyResponse : "participa en"
+    Graduate ||--o{ JobApplication : "postula a"
+    Survey ||--o{ SurveyQuestion : "contiene (cascade delete)"
+    Survey ||--o{ SurveyResponse : "recibe"
+    SurveyResponse ||--o{ SurveyAnswer : "incluye (cascade delete)"
+    SurveyQuestion ||--o{ SurveyAnswer : "responde"
+    Company ||--o{ JobOffer : "publica"
+    JobOffer ||--o{ JobApplication : "recibe"
+```
+
+La cadena de relaciones principal es:
+
+```
+Faculty → School → Graduate ← User
+Graduate → SurveyResponse → SurveyAnswer ← SurveyQuestion ← Survey
+Graduate → JobApplication ← JobOffer ← Company
+```
+
+Las eliminaciones en cascada están configuradas en:
+- `User → Graduate`: al eliminar un usuario, se elimina su perfil de egresado.
+- `Graduate → WorkExperience`: al eliminar un egresado, se elimina su historial laboral.
+- `Survey → SurveyQuestion`: al eliminar una encuesta, se eliminan sus preguntas.
+- `SurveyResponse → SurveyAnswer`: al eliminar una respuesta, se eliminan las respuestas individuales.
+
+\newpage
+
+# Arquitectura de Seguridad
+
+## Autenticación
+
+El sistema implementa autenticación basada en **credenciales** (correo electrónico y contraseña) mediante **NextAuth v4** con estrategia de sesión JWT. El flujo de autenticación es:
+
+1. El usuario envía correo y contraseña al endpoint `POST /api/auth/callback/credentials`.
+2. NextAuth invoca la función `authorize` del `CredentialsProvider`.
+3. El sistema valida el formato de los datos con un esquema Zod.
+4. Se consulta el usuario en PostgreSQL por correo electrónico.
+5. Se verifica que `user.isActive === true`.
+6. Se compara la contraseña ingresada contra el hash bcrypt almacenado (`bcrypt.compare`).
+7. Si todas las verificaciones pasan, se genera un JWT firmado con `NEXTAUTH_SECRET`.
+8. El token se almacena en una cookie HTTP-only del navegador.
+
+**Las contraseñas se almacenan con bcrypt (factor de costo 10).** No se almacenan en texto plano bajo ninguna circunstancia.
+
+## Autorización y Control de Acceso
+
+El sistema implementa RBAC (Role-Based Access Control) en **dos niveles independientes y complementarios**:
+
+### Nivel 1: Middleware de Rutas (src/middleware.ts)
+
+El middleware intercepta todas las peticiones HTTP antes de que alcancen cualquier ruta. Utiliza `withAuth` de `next-auth/middleware` para:
+
+1. Verificar la existencia de un token JWT válido en la cookie de sesión.
+2. Proteger las rutas `/admin/**`, `/egresado/**` y `/escuela/**`.
+3. Aplicar redirecciones por rol: un ADMIN que accede a `/egresado` es redirigido a `/admin`; un GRADUATE que accede a `/admin` es redirigido a `/egresado`.
+
+Este nivel protege la navegación del usuario.
+
+### Nivel 2: Verificación en Route Handlers
+
+Cada route handler verifica independientemente la sesión y el rol mediante `getServerSession(authOptions)`:
+
+```typescript
+const session = await getServerSession(authOptions)
+if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+if (session.user.role !== "ADMIN") return NextResponse.json({ error: "Acceso denegado" }, { status: 403 })
+```
+
+Este nivel protege los datos, siendo el único mecanismo efectivo contra peticiones directas a la API que eluden la UI.
+
+## Protección de Datos
+
+La arquitectura implementa las siguientes medidas de protección de datos personales (Ley N° 29733):
+
+- **Hashing irreversible de contraseñas:** bcrypt con factor de costo 10.
+- **Tokens sin persistencia:** Los JWT no se almacenan en la base de datos.
+- **Restricción de acceso a datos de terceros:** Un egresado solo puede leer y modificar su propio perfil. El servicio `updateGraduateProfile` verifica que `graduate.userId === session.user.id` antes de ejecutar la actualización.
+- **Campos sensibles enmascarados:** En la página de configuración institucional, los valores de `DATABASE_URL` y `NEXTAUTH_SECRET` no se exponen al navegador.
+
+## Validación de Entradas
+
+Toda entrada de datos de usuario es validada en el servidor mediante esquemas **Zod** antes de ser procesada. Los esquemas están centralizados en `src/lib/validations/` y son compartidos entre la capa de API y las Server Actions:
+
+- `src/lib/validations/graduate.ts` — esquemas de perfil del egresado.
+- `src/lib/validations/job.ts` — esquemas de ofertas laborales y postulaciones.
+- `src/lib/validations/survey.ts` — esquemas de encuestas y preguntas.
+- `src/lib/actions/auth.actions.ts` — esquema de registro (inline, `RegisterSchema`).
+
+\newpage
+
+# Arquitectura de Autenticación y Roles
+
+## Proveedor de Autenticación
+
+La autenticación está implementada mediante **NextAuth v4.24.14** con un único proveedor de tipo `CredentialsProvider`. No se utilizan proveedores OAuth (Google, GitHub, etc.) ni magic links. Esta decisión fue adoptada para garantizar control total sobre el proceso de autenticación dentro de la infraestructura institucional.
+
+## Estrategia de Sesión
+
+La estrategia de sesión es **JWT** (`strategy: "jwt"`). Los tokens JWT:
+
+- Son firmados con `NEXTAUTH_SECRET` (algoritmo HS256 por defecto en NextAuth).
+- No se persisten en base de datos.
+- Se almacenan en cookies HTTP-only seguras administradas por NextAuth.
+- Tienen una duración determinada por la configuración `maxAge` de NextAuth.
+
+## Roles del Sistema
+
+**Tabla 7. Roles del sistema y sus privilegios**
+
+| Rol | Dashboard | Descripción | Estado |
+|---|---|---|---|
+| `ADMIN` | `/admin` | Comisión de Seguimiento al Egresado. Acceso completo a todos los módulos operativos. | Operativo |
+| `GRADUATE` | `/egresado` | Egresado, bachiller o titulado registrado. Acceso a su propio perfil, encuestas y bolsa laboral. | Operativo |
+| `SCHOOL` | `/escuela` | Director o coordinador de la Escuela Profesional. Acceso a APIs de consulta preparadas. | Rol técnico preparado; interfaz UI no implementada |
+
+El token JWT contiene tres campos adicionales más allá del estándar:
+
+```typescript
+// src/types/next-auth.d.ts
+interface JWT {
+  id:          string          // ID del usuario (User.id)
+  role:        "ADMIN" | "GRADUATE" | "SCHOOL"
+  graduateId:  string | null   // Graduate.id (null para ADMIN)
+}
+```
+
+## Middleware de Protección de Rutas
+
+**Figura 4. Flujo de Autenticación y Autorización**
+
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant MW as Middleware
+    participant NA as NextAuth
+    participant DB as Base de Datos
+
+    U->>MW: GET /admin/egresados
+    MW->>NA: Verifica token JWT en cookie
+    alt Token inválido o ausente
+        NA-->>MW: No autenticado
+        MW-->>U: Redirect → /login
+    else Token válido
+        NA-->>MW: { id, role, graduateId }
+        alt role != ADMIN
+            MW-->>U: Redirect → /egresado (si GRADUATE) o /escuela (si SCHOOL)
+        else role == ADMIN
+            MW->>+DB: (No accede a BD aquí)
+            MW-->>U: Acceso permitido → página /admin/egresados
+        end
+    end
+
+    Note over U,DB: En cada Route Handler de API
+    U->>+DB: POST /api/admin/surveys
+    DB->>NA: getServerSession()
+    alt Sin sesión
+        NA-->>U: HTTP 401
+    else Sesión con role != ADMIN
+        NA-->>U: HTTP 403
+    else Sesión con role == ADMIN
+        DB-->>U: HTTP 200 + datos
+    end
+```
+
+## Token JWT y Extensión de Tipos
+
+`src/types/next-auth.d.ts` extiende los tipos de NextAuth para incluir los campos personalizados `id`, `role` y `graduateId` en `Session`, `User` y `JWT`. Esta extensión es global en toda la aplicación y evita la duplicación de declaraciones de tipo.
+
+\newpage
+
+# Arquitectura de Reportes y Analytics
+
+## Módulo de Analítica
+
+El módulo de analítica está implementado en `src/lib/services/analytics.service.ts` y provee ocho funciones de consulta optimizadas. Todas las consultas son ejecutadas en paralelo mediante `Promise.all` en la función `getFullAnalytics`, minimizando la latencia total:
+
+| Función | Descripción |
+|---|---|
+| `getGlobalKPIs(filters)` | Total egresados, tasa de empleabilidad, encuestas activas, empleos activos, postulaciones totales, empresas, nuevos del mes |
+| `getEmploymentStatusDist(filters)` | Distribución de egresados por estado laboral (5 categorías) |
+| `getGraduationByYear(filters)` | Tendencia histórica de egresos por año académico |
+| `getTopEmployers()` | Top 10 empresas donde trabajan actualmente los egresados (por `currentCompany`) |
+| `getApplicationStatusDist()` | Distribución de postulaciones por estado del ciclo de selección |
+| `getCompaniesBySector()` | Distribución de empresas registradas por sector económico |
+| `getSurveyParticipation()` | Tasa de participación en las 8 encuestas más recientes |
+| `getGraduatesForExport(filters)` | Conjunto completo de datos de egresados para exportación |
+
+Las funciones `getGraduatesByFaculty`, `getGraduatesBySchool` y `getEmploymentBySchool` se conservan en el servicio como capacidad arquitectónica para versiones futuras con múltiples escuelas, aunque no se exponen en la interfaz actual.
+
+El panel de analítica en `/admin/reportes` utiliza `export const dynamic = "force-dynamic"` para garantizar que los datos sean siempre actuales en cada visita.
+
+## Exportación de Datos
+
+El endpoint `GET /api/admin/analytics/export` soporta cuatro conjuntos de datos y dos formatos de salida, configurados mediante query params:
+
+- **Formatos:** `format=xlsx` o `format=csv`
+- **Conjuntos:** `dataset=graduates`, `dataset=applications`, `dataset=surveys`, `dataset=jobs`
+
+La generación de XLSX utiliza la biblioteca `xlsx 0.18.5`. La generación de CSV utiliza codificación UTF-8 con BOM (`﻿`) para compatibilidad con Microsoft Excel en sistemas Windows en español.
+
+## Generación de PDF
+
+El reporte institucional en PDF es generado por `GET /api/admin/reports/pdf` mediante `@react-pdf/renderer 4.5.1`. Este módulo está configurado como `serverExternalPackage` en `next.config.ts` para evitar que Turbopack lo incluya en el bundle del cliente:
+
+```typescript
+// next.config.ts
+serverExternalPackages: ["@react-pdf/renderer"]
+```
+
+Esta configuración es obligatoria: `@react-pdf/renderer` utiliza APIs de Node.js no disponibles en el navegador, y su inclusión en el bundle del cliente causaría errores en runtime.
+
+El reporte PDF incluye: identificación institucional (UNA Puno · EPIS), KPIs clave, tabla de distribución de estado laboral, evolución de egresos por año y fecha de generación.
+
+\newpage
+
+# Estructura del Proyecto
+
+## Organización de Directorios
+
+```
+seguimiento_egresado_web/
+│
+├── documentacion/              # Documentos del proyecto (SRS, DA)
+├── prisma/
+│   ├── schema.prisma           # Esquema de base de datos
+│   ├── seed.ts                 # Datos iniciales de prueba
+│   └── migrations/             # Historial de migraciones
+├── public/
+│   └── images/logos/           # Logos institucionales
+├── reglamento/                 # Reglamento vigente (PDF)
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (auth)/             # /login, /registro — sin shell
+│   │   │   └── registro/
+│   │   │       ├── page.tsx
+│   │   │       └── registro-form.tsx
+│   │   ├── (public)/           # /, /empleos — portal público
+│   │   ├── (dashboard)/        # Rutas protegidas
+│   │   │   ├── layout.tsx      # DashboardShell
+│   │   │   ├── admin/          # /admin/**
+│   │   │   ├── egresado/       # /egresado/**
+│   │   │   └── escuela/        # /escuela (stub)
+│   │   ├── api/                # Route Handlers REST
+│   │   │   ├── admin/          # APIs de administración
+│   │   │   ├── auth/           # NextAuth handler
+│   │   │   ├── public/         # APIs públicas
+│   │   │   ├── graduates/      # APIs del egresado
+│   │   │   ├── jobs/           # Bolsa laboral
+│   │   │   └── surveys/        # Encuestas
+│   │   ├── globals.css         # Variables CSS / Tailwind v4
+│   │   ├── layout.tsx          # Root layout
+│   │   └── page.tsx            # Landing page
+│   ├── components/
+│   │   ├── admin/              # Componentes del panel admin
+│   │   │   ├── analytics/      # Gráficos y filtros
+│   │   │   ├── applications/   # Gestión de postulaciones
+│   │   │   ├── graduates/      # Listado y detalle de egresados
+│   │   │   ├── jobs/           # Bolsa laboral admin
+│   │   │   └── surveys/        # Constructor de encuestas
+│   │   ├── auth/               # Formularios de autenticación
+│   │   ├── dashboard/graduate/ # Componentes del dashboard del egresado
+│   │   ├── jobs/               # Componentes de bolsa laboral pública
+│   │   ├── layout/             # DashboardShell, Sidebar, Navbar
+│   │   ├── profile/            # Header y tarjetas de perfil
+│   │   ├── public/             # Secciones del landing
+│   │   ├── surveys/            # Formulario de respuesta de encuesta
+│   │   └── ui/                 # Primitivos shadcn/ui
+│   ├── generated/
+│   │   └── prisma/             # Cliente Prisma generado (no editar)
+│   ├── lib/
+│   │   ├── actions/            # Server Actions
+│   │   │   └── auth.actions.ts
+│   │   ├── auth.ts             # Configuración NextAuth (authOptions)
+│   │   ├── prisma.ts           # Singleton del cliente Prisma
+│   │   ├── services/           # Capa de servicios (lógica de negocio)
+│   │   ├── utils.ts            # Utilidades generales (cn, etc.)
+│   │   └── validations/        # Esquemas Zod + mapas de etiquetas
+│   └── types/
+│       ├── graduate.ts         # Tipo GraduateProfile
+│       ├── index.ts            # Tipos compartidos (NavItem, etc.)
+│       └── next-auth.d.ts      # Extensión de tipos de NextAuth
+├── middleware.ts               # Middleware RBAC de Next.js
+├── next.config.ts              # Configuración de Next.js
+├── components.json             # Configuración de shadcn/ui
+├── CLAUDE.md                   # Guía para agentes de desarrollo
+└── .nvmrc                      # Versión de Node.js
+```
+
+## Nomenclatura de Archivos
+
+El proyecto sigue las siguientes convenciones de nomenclatura:
+
+| Tipo de archivo | Convención | Ejemplo |
+|---|---|---|
+| Páginas Next.js | `page.tsx` | `admin/egresados/page.tsx` |
+| Layouts | `layout.tsx` | `(dashboard)/layout.tsx` |
+| Estados de carga | `loading.tsx` | `admin/egresados/loading.tsx` |
+| Esqueletos de carga | `*-skeleton.tsx` | `graduates-skeleton.tsx` |
+| Componentes de dominio | `kebab-case.tsx` | `graduates-table.tsx` |
+| Servicios | `*.service.ts` | `analytics.service.ts` |
+| Acciones de servidor | `*.actions.ts` | `auth.actions.ts` |
+| Validaciones | `[dominio].ts` | `survey.ts`, `job.ts` |
+| Route Handlers | `route.ts` | `api/admin/surveys/route.ts` |
+
+## Patrones de Componentes
+
+El sistema distingue dos tipos de componentes React con comportamientos distintos:
+
+**Server Components (por defecto en App Router):**
+- No tienen acceso a hooks de React (`useState`, `useEffect`).
+- Pueden realizar operaciones asíncronas directamente (llamadas a servicios, `getServerSession`).
+- Se ejecutan exclusivamente en el servidor; no se envían al navegador.
+- Utilizados en todas las páginas del dashboard para la carga inicial de datos.
+
+**Client Components (`"use client"` en la primera línea):**
+- Tienen acceso a hooks de React y al estado del navegador.
+- Se hidratan en el navegador después del SSR inicial.
+- Utilizados para formularios interactivos, filtros, gráficos Recharts y componentes con estado.
+
+El patrón recomendado es mantener la mayor parte del árbol de componentes como Server Components y desplazar hacia Client Components solo las hojas que requieren interactividad.
+
+\newpage
+
+# Tecnologías Utilizadas
+
+**Tabla 8. Stack tecnológico completo**
+
+| Categoría | Tecnología | Versión | Rol en el sistema |
+|---|---|---|---|
+| **Framework web** | Next.js | 16.2.6 | Framework principal — App Router, SSR, API Routes, Server Actions |
+| **Lenguaje** | TypeScript | ^5 | Tipado estático en toda la base de código |
+| **Runtime** | React | 19.2.4 | Biblioteca de componentes de interfaz |
+| **Base de datos** | PostgreSQL | Cloud (Supabase) | Motor de base de datos relacional |
+| **ORM** | Prisma | 5.22.0 | Capa de abstracción de base de datos, migraciones y generación de cliente |
+| **Connection pool** | PgBouncer | Cloud (Supabase) | Pooling de conexiones en modo transaction |
+| **Autenticación** | NextAuth | 4.24.14 | Gestión de sesiones JWT con CredentialsProvider |
+| **Hashing** | bcryptjs | 3.0.3 | Hash de contraseñas (costo 10) |
+| **CSS** | Tailwind CSS | v4 | Utilidades de estilos (sin `tailwind.config.ts`; tokens en `globals.css`) |
+| **Componentes UI** | shadcn/ui | 4.7.0 | Primitivos de interfaz basados en Radix UI |
+| **Radix UI** | @radix-ui/react | 1.4.3 | Componentes accesibles sin estilos |
+| **Validación** | Zod | ^4.4.3 | Esquemas de validación de datos |
+| **Formularios** | React Hook Form | ^7.75.0 | Gestión de formularios con validación |
+| **Gráficos** | Recharts | 3.8.1 | Gráficos del panel de analítica |
+| **PDF** | @react-pdf/renderer | 4.5.1 | Generación de reportes institucionales PDF |
+| **Excel** | xlsx | 0.18.5 | Exportación de datos en formato XLSX |
+| **Notificaciones** | sonner | 2.0.7 | Toast notifications |
+| **Iconos** | Lucide React | — | Biblioteca de iconos SVG |
+| **Linting** | ESLint | — | Análisis estático de código |
+
+**Colores institucionales (definidos en `src/app/globals.css`):**
+
+| Variable CSS | Valor | Uso |
+|---|---|---|
+| `--color-una-primary` | `#1E3A5F` | Azul marino oscuro (sidebar, avatares) |
+| `--color-una-secondary` | `#2563EB` | Azul institucional (botones, acentos) |
+| `--color-una-accent` | `#38BDF8` | Celeste (detalles, gradientes) |
+
+El sistema de temas utiliza el espacio de color **OKLch** (Tailwind CSS v4), con soporte para modo claro y oscuro mediante clases CSS.
+
+\newpage
+
+# Decisiones Arquitectónicas
+
+**Tabla 9. Registro de Decisiones Arquitectónicas (ADR)**
+
+| ID | Decisión | Alternativas consideradas | Razón de la elección |
+|---|---|---|---|
+| **ADR-01** | Next.js 16 App Router como framework principal | Express.js + React SPA, Nuxt.js | App Router unifica SSR, API Routes y Server Actions en un único artefacto desplegable, reduciendo la complejidad operacional |
+| **ADR-02** | Estrategia de sesión JWT (sin persistencia en BD) | Sesiones en base de datos (database strategy) | Elimina la dependencia de una tabla de sesiones, reduce latencia de autenticación y simplifica el escalado horizontal |
+| **ADR-03** | Prisma client generado en `src/generated/prisma` | Ubicación por defecto `node_modules/@prisma/client` | Control explícito del artefacto generado; facilita despliegues en entornos que incluyen el código fuente en el contenedor |
+| **ADR-04** | Transaction Pooler de PgBouncer (puerto 6543) | Conexión directa, Session Pooler | Next.js crea múltiples instancias en desarrollo (hot reload) y múltiples workers en producción. El Transaction Pooler evita agotar el límite de conexiones directas de PostgreSQL (superado con el Session Pooler: error EMAXCONNSESSION) |
+| **ADR-05** | Patrón Singleton para el cliente Prisma | Nueva instancia por módulo | Hot reload de Next.js recarga módulos en desarrollo; sin singleton se crean cientos de conexiones, agotando el pool |
+| **ADR-06** | Capa de servicios obligatoria (Service Layer Pattern) | Queries Prisma directas en componentes | Centraliza la lógica de negocio, facilita el testing, evita duplicación de queries y garantiza que los tipos exportados sean coherentes entre capas |
+| **ADR-07** | Validación Zod en el servidor (no solo en cliente) | Solo validación HTML5 nativa | La validación del cliente es bypasseable; la validación Zod en servidor previene inyección de datos malformados independientemente del cliente |
+| **ADR-08** | Server Actions solo para registro; API REST para el resto | Todo mediante Server Actions | Los Server Actions son adecuados para mutaciones de formulario simples (registro). Para consultas paginadas, filtros complejos y componentes cliente con estado, la API REST ofrece mayor control y reutilización |
+| **ADR-09** | `@react-pdf/renderer` como `serverExternalPackage` | Generación de PDF en cliente | `@react-pdf/renderer` depende de APIs de Node.js. Incluirlo en el bundle del cliente genera errores en runtime; el flag `serverExternalPackages` lo fuerza a ejecutarse solo en el servidor |
+| **ADR-10** | Tailwind CSS v4 sin `tailwind.config.ts` | Tailwind v3 con `tailwind.config.ts` | Tailwind v4 utiliza variables CSS nativas y el espacio OKLch para mayor fidelidad de color; el sistema de tokens es más flexible y no requiere un archivo de configuración separado |
+| **ADR-11** | Sistema de una única escuela en la interfaz (EPIS) con arquitectura multi-escuela en datos | Sistema nativo mono-escuela | El Reglamento está orientado a EPIS, pero la arquitectura de datos (`Faculty → School → Graduate`) permite extensión futura sin migraciones de esquema. La UI simplificada reduce complejidad innecesaria para el usuario actual |
+| **ADR-12** | Tipo `String` para `SurveyQuestion.type` y `JobApplication.status` | Enum de Prisma | Usar `String` permite agregar nuevos tipos de pregunta o estados sin generar una migración de base de datos; la validación se delega a Zod en la capa de aplicación |
+
+\newpage
+
+# Diagramas Arquitectónicos
+
+## Arquitectura General
+
+*(Ver Figura 1 en Sección 4.1)*
+
+## Flujo de Autenticación
+
+*(Ver Figura 4 en Sección 10.4)*
+
+## Flujo de Creación y Respuesta de Encuestas
+
+**Figura 6. Flujo de Encuestas Institucionales**
+
+```mermaid
+sequenceDiagram
+    actor A as Administrador
+    actor G as Egresado
+    participant UI as Interfaz (Next.js)
+    participant API as API REST
+    participant SVC as surveys.service.ts
+    participant DB as PostgreSQL
+
+    Note over A,DB: Flujo de creación de encuesta
+    A->>UI: Accede a /admin/encuestas/nueva
+    UI->>A: Formulario (SurveyBuilder)
+    A->>UI: Completa título, preguntas y envía
+    UI->>API: POST /api/admin/surveys
+    API->>API: Verifica sesión ADMIN
+    API->>SVC: createSurvey(data)
+    SVC->>DB: Transaction: INSERT Survey + INSERT SurveyQuestions[]
+    DB-->>SVC: Survey creada con preguntas
+    SVC-->>API: Survey creada
+    API-->>UI: HTTP 201
+    UI->>A: Toast "Encuesta creada" + redirect
+
+    Note over G,DB: Flujo de respuesta de encuesta
+    G->>UI: Accede a /egresado/encuestas
+    UI->>API: GET /api/surveys/:id
+    API->>SVC: getSurveyForResponse(surveyId, graduateId)
+    SVC->>DB: Verifica no-duplicado (@@unique surveyId+graduateId)
+    DB-->>SVC: Encuesta disponible
+    SVC-->>API: Preguntas de la encuesta
+    API-->>UI: Formulario de respuesta
+    G->>UI: Completa respuestas y envía
+    UI->>API: POST /api/surveys/:id/respond
+    API->>SVC: submitSurveyResponse(surveyId, graduateId, answers)
+    SVC->>DB: Transaction: INSERT SurveyResponse + INSERT SurveyAnswers[]
+    DB-->>SVC: Respuesta registrada
+    alt Encuesta ya respondida
+        DB-->>SVC: Error de unicidad (@@unique)
+        SVC-->>API: Error
+        API-->>UI: HTTP 409 "Ya respondiste esta encuesta"
+    end
+    API-->>UI: HTTP 201
+    UI->>G: Encuesta pasa a "completadas"
+```
+
+## Flujo de la Bolsa Laboral
+
+**Figura 7. Flujo de la Bolsa Laboral**
+
+```mermaid
+flowchart TD
+    START([Inicio]) --> A{¿Autenticado?}
+    A -->|No| PUBL[Portal Público\n/empleos]
+    A -->|Sí, GRADUATE| GRAD[Dashboard Egresado\n/egresado/empleos]
+    A -->|Sí, ADMIN| ADMIN[Panel Admin\n/admin/bolsa-laboral]
+
+    PUBL --> V1[Ver listado de ofertas\nactivas y vigentes]
+    PUBL --> D1[Ver detalle de oferta]
+
+    GRAD --> V2[Ver ofertas activas\nAPI: GET /api/jobs]
+    GRAD --> D2[Ver detalle de oferta\nAPI: GET /api/jobs/:id]
+    D2 --> POST{¿Postular?}
+    POST -->|Sí| CHK1{¿Ya postuló?}
+    CHK1 -->|Sí| ERR1[HTTP 409\nPostulación duplicada]
+    CHK1 -->|No| CHK2{¿Oferta vigente?}
+    CHK2 -->|No| ERR2[HTTP 404\nOferta no disponible]
+    CHK2 -->|Sí| OK1[JobApplication\nstatus = PENDING]
+
+    ADMIN --> LIST[Listar todas las ofertas\nAPI: GET /api/admin/jobs]
+    ADMIN --> CREATE[Crear oferta\nAPI: POST /api/admin/jobs]
+    ADMIN --> TOGGLE[Activar/Desactivar\nAPI: PATCH /api/admin/jobs/:id/toggle]
+    ADMIN --> APLICATIONS[Gestionar postulaciones\nAPI: GET /api/admin/applications]
+    APLICATIONS --> CHANGE[Cambiar estado\nAPI: PATCH /api/admin/applications/:id/status]
+    CHANGE --> ESTADOS[PENDING → REVIEWED\n→ INTERVIEW → ACCEPTED/REJECTED]
+```
+
+## Relación entre Módulos del Sistema
+
+**Figura 8. Diagrama de Relación entre Módulos**
+
+```mermaid
+graph TD
+    subgraph PUBLICO["🌐 Módulos Públicos"]
+        M1["M1: Portal Público\n(Landing + Bolsa pública)"]
+    end
+
+    subgraph AUTH_MOD["🔐 Módulo de Autenticación"]
+        M2["M2: Autenticación\n(/login, /registro, NextAuth)"]
+    end
+
+    subgraph ADMIN_MOD["👤 Módulos de Administración (ADMIN)"]
+        M6["M6: Gestión de Egresados\n(/admin/egresados)"]
+        M7["M7: Encuestas Admin\n(/admin/encuestas)"]
+        M4A["M4A: Bolsa Laboral Admin\n(/admin/bolsa-laboral)"]
+        M5["M5: Gestión de Postulaciones\n(/admin/postulaciones)"]
+        M8["M8: Analítica y Reportes\n(/admin/reportes)"]
+        M9["M9: Configuración\n(/admin/configuracion)"]
+    end
+
+    subgraph GRAD_MOD["🎓 Módulos del Egresado (GRADUATE)"]
+        M3["M3: Dashboard Egresado\n(/egresado)"]
+        M3B["M3B: Perfil del Egresado\n(/egresado/perfil)"]
+        M3C["M3C: Encuestas Egresado\n(/egresado/encuestas)"]
+        M4B["M4B: Bolsa Laboral Egresado\n(/egresado/empleos)"]
+    end
+
+    subgraph DATA_MOD["🗄️ Capa de Datos"]
+        SVC["Services Layer"]
+        DB[("PostgreSQL\nPrisma 5")]
+    end
+
+    M1 --> M2
+    M2 --> M3
+    M2 --> M6
+
+    M3 --> M3B
+    M3 --> M3C
+    M3 --> M4B
+
+    M3 --> SVC
+    M3B --> SVC
+    M3C --> SVC
+    M4B --> SVC
+    M4A --> SVC
+    M5 --> SVC
+    M6 --> SVC
+    M7 --> SVC
+    M8 --> SVC
+
+    SVC --> DB
+```
+
+\newpage
+
+# Flujo General de Operación
+
+## Ciclo de Vida del Egresado en la Plataforma
+
+El siguiente flujo describe el ciclo completo de interacción de un egresado con el sistema, desde su registro hasta el uso pleno de la plataforma:
+
+```mermaid
+flowchart LR
+    R1["1. REGISTRO\nEgresado crea cuenta\n(nombre, DNI, email,\ncontraseña, año de egreso)\nSistema asigna EPIS automáticamente"]
+    R2["2. AUTENTICACIÓN\nInicia sesión con\ncredenciales\nJWT generado"]
+    R3["3. DASHBOARD\nVe panel de inicio\ncon estadísticas,\nencuestas pendientes\ny empleos recientes"]
+    R4["4. PERFIL\nActualiza información\npersonal y situación\nlaboral actual"]
+    R5["5. ENCUESTAS\nResponde encuestas\ninstitucionales\nsemestrales"]
+    R6["6. EMPLEO\nConsulta bolsa laboral\ny se postula a\nofertas activas"]
+    R7["7. SEGUIMIENTO\nMonitorea el estado\nde sus postulaciones"]
+
+    R1 --> R2 --> R3
+    R3 --> R4
+    R3 --> R5
+    R3 --> R6
+    R6 --> R7
+```
+
+## Ciclo Administrativo
+
+El siguiente flujo describe las operaciones periódicas del Administrador (Comisión de Seguimiento al Egresado):
+
+```mermaid
+flowchart TD
+    A1["Creación de\nencuesta semestral\n(Admin)"]
+    A2["Distribución automática\na egresados activos\n(encuesta global)"]
+    A3["Recopilación de\nrespuestas\n(sistema automatizado)"]
+    A4["Publicación de\nofertas laborales\n(Admin + Empresas)"]
+    A5["Gestión de\npostulaciones\n(Admin actualiza estados)"]
+    A6["Generación de\nreporte analítico\n(Admin descarga PDF/XLSX)"]
+    A7["Presentación a\nDirector de EPIS\n(Art. 7g Reglamento)"]
+
+    A1 --> A2 --> A3
+    A4 --> A5
+    A3 --> A6
+    A5 --> A6
+    A6 --> A7
+```
+
+\newpage
+
+# Consideraciones de Escalabilidad
+
+## Escalabilidad de la Base de Datos
+
+La arquitectura de datos está preparada para escalar en dos dimensiones:
+
+**Escalabilidad institucional (más escuelas):** El modelo `Faculty → School → Graduate` permite incorporar nuevas unidades académicas sin cambios en el esquema. Los servicios de backend (`analytics.service.ts`, `admin-graduates.service.ts`) aceptan parámetros de filtro por `facultyId` y `schoolId` que ya están implementados, aunque la interfaz actual no los expone.
+
+**Escalabilidad de datos (más egresados):** Los índices definidos en el esquema (`schoolId`, `employmentStatus`, `graduationYear`, `isActive`) garantizan rendimiento aceptable al escalar el número de registros. El Transaction Pooler de PgBouncer administra eficientemente la concurrencia de conexiones.
+
+## Escalabilidad de la Aplicación
+
+La arquitectura stateless con JWT (sin estado de sesión en servidor) permite escalar horizontalmente la capa de aplicación: múltiples instancias de Next.js pueden servir peticiones sin compartir estado, con el único punto de coordinación siendo la base de datos PostgreSQL.
+
+El uso de `connection_limit=5` por instancia, combinado con el Transaction Pooler, permite escalar a decenas de instancias de aplicación sin superar los límites de conexiones de la base de datos.
+
+## Escalabilidad de la Interfaz
+
+El sistema de componentes React con Server Components minimiza el JavaScript enviado al cliente: solo los componentes interactivos se hidratan en el navegador. Esto garantiza tiempos de carga razonables independientemente de la complejidad del dashboard.
+
+\newpage
+
+# Limitaciones Actuales
+
+**Tabla 10. Módulos implementados y su estado**
+
+| N° | Módulo | Estado | Observación |
+|---|---|---|---|
+| 1 | Autenticación y registro | ✅ Implementado | Registro auto-asigna EPIS |
+| 2 | Perfil del egresado | ✅ Implementado | Sin carga de foto/CV |
+| 3 | Dashboard del egresado | ✅ Implementado | |
+| 4 | Encuestas — Administración | ✅ Implementado | |
+| 5 | Encuestas — Participación | ✅ Implementado | |
+| 6 | Bolsa Laboral — Administración | ✅ Implementado | |
+| 7 | Bolsa Laboral — Pública y Egresado | ✅ Implementado | |
+| 8 | Gestión de Postulaciones | ✅ Implementado | |
+| 9 | Gestión de Egresados (Admin) | ✅ Implementado | |
+| 10 | Analítica y Reportes | ✅ Implementado | |
+| 11 | Portal Público (Landing + Empleos) | ✅ Implementado | |
+| 12 | Panel Administrativo | ✅ Implementado | |
+| 13 | Página de Configuración (Admin) | ✅ Implementado | Solo lectura/info |
+| 14 | Panel de Escuela Profesional | ⚠️ Stub | Rol técnico preparado; sin UI |
+| 15 | Módulo de Eventos | ❌ No implementado | Solo modelo de datos definido |
+| 16 | Gestión directa de empresas | ❌ No implementado | Solo lectura en selector |
+| 17 | Edición del historial laboral (Egresado) | ❌ No implementado | Solo lectura en vista Admin |
+| 18 | Carga de foto y CV | ❌ No implementado | Campos definidos en esquema |
+| 19 | Recuperación de contraseña | ❌ No implementado | |
+| 20 | Notificaciones automáticas | ❌ No implementado | |
+| 21 | Integración con sistemas académicos | ❌ No implementado | Fuera de alcance actual |
+
+\newpage
+
+# Conclusiones
+
+1. **Arquitectura coherente con el Reglamento institucional.** El diseño arquitectónico del sistema da respuesta directa a los mandatos del Reglamento del Sistema de Seguimiento e Inserción Laboral del Egresado (v1, mayo 2026): el registro y actualización de datos de egresados (Art. 11a), el servicio de bolsa laboral (Art. 19), las encuestas de seguimiento (Art. 18c), la analítica estadística (Art. 18k), la plataforma centralizada (Art. 20) y la protección de datos personales (Art. 20 / Ley N° 29733).
+
+2. **Separación de responsabilidades como principio rector.** La arquitectura en cuatro capas (presentación → API → servicios → datos) con flujo de dependencia unidireccional garantiza que cada componente del sistema tenga una responsabilidad única y claramente delimitada. Esta separación facilita el mantenimiento, la detección de errores y la evolución independiente de cada capa.
+
+3. **Seguridad implementada en profundidad.** El control de acceso basado en roles opera en dos niveles independientes: el middleware de Next.js protege las rutas de navegación y cada route handler de la API verifica la sesión de forma autónoma. Las restricciones de integridad más críticas (respuesta única por encuesta, postulación única por oferta) están implementadas simultáneamente en la lógica de aplicación y en la base de datos, garantizando integridad incluso ante peticiones concurrentes o fallos parciales.
+
+4. **Decisiones técnicas fundamentadas.** Las catorce decisiones arquitectónicas registradas en el ADR responden a necesidades concretas identificadas durante el desarrollo: el uso del Transaction Pooler resolvió el agotamiento de conexiones en producción, el patrón singleton del cliente Prisma evita fugas de memoria en desarrollo, y el flag `serverExternalPackages` para `@react-pdf/renderer` resuelve incompatibilidades de runtime.
+
+5. **Extensibilidad verificada.** La arquitectura de datos soporta múltiples facultades y escuelas profesionales sin cambios de esquema. Los servicios de backend mantienen capacidad de filtrado multi-escuela. La extensión a otras unidades académicas de la UNA Puno requeriría únicamente cambios en la interfaz de usuario, no en el modelo de datos ni en la capa de servicios.
+
+6. **Base técnica sólida para evolución.** Las limitaciones identificadas en la versión actual (gestión de empresas, historial laboral editable, carga de archivos, notificaciones, módulo de eventos, panel de escuela) no representan deudas técnicas arquitectónicas, sino funcionalidades diferidas con modelos de datos ya definidos. Su implementación futura no requiere cambios estructurales al sistema.
+
+---
+
+*Documento elaborado por el equipo de desarrollo del Sistema Web de Seguimiento e Inserción Laboral del Egresado.*
+
+*Basado en análisis exhaustivo del código fuente verificado, el Reglamento del Sistema de Seguimiento e Inserción Laboral del Egresado (v1, mayo 2026), el SRS v2.1 (junio 2026) y las decisiones arquitectónicas documentadas durante el desarrollo del sistema.*
+
+*Versión 1.0 — Junio 2026 — Universidad Nacional del Altiplano Puno · E.P. Ingeniería de Sistemas*

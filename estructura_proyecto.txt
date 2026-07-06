@@ -1,0 +1,383 @@
+.
+├── documentacion
+│   ├── diagrams
+│   │   ├── figura_01.png
+│   │   ├── figura_02.png
+│   │   ├── figura_03.png
+│   │   ├── figura_04.png
+│   │   ├── figura_05.png
+│   │   ├── figura_06.png
+│   │   ├── figura_07.png
+│   │   ├── figura_08.png
+│   │   ├── figura_09.png
+│   │   └── figura_10.png
+│   ├── documentos_propios
+│   │   └── DatosEgresados.xlsx
+│   ├── reportes_diarios
+│   │   ├── 2026-06-09.md
+│   │   ├── 2026-06-10.md
+│   │   ├── 2026-06-11.md
+│   │   ├── 2026-06-12.md
+│   │   ├── 2026-06-15.md
+│   │   ├── 2026-06-16.md
+│   │   ├── 2026-06-17.md
+│   │   ├── 2026-06-19.md
+│   │   ├── 2026-07-01.md
+│   │   └── PLANTILLA_REPORTE_DIARIO.md
+│   ├── Credenciales_Prueba.txt
+│   ├── DA_EPIS_UNAP_v1.md
+│   ├── DA_EPIS_UNAP_v1.md.bak
+│   ├── Informe_Semanal_Practicas_EPIS_UNAP.md
+│   ├── Manual_Administracion_v1.md
+│   ├── Manual_Instalacion_v1.md
+│   ├── Manual_Usuario_v1.md
+│   ├── Plan_Desarrollo_Software_EPIS_UNAP.md
+│   ├── SRS.md
+│   ├── SRS_v2.md
+│   ├── SRS_v2.md.bak
+│   └── SRS_v3.md
+├── prisma
+│   ├── migrations
+│   │   ├── 20260514205052_init
+│   │   │   └── migration.sql
+│   │   ├── 20260610174656_add_director_practice_coordinator_roles
+│   │   │   └── migration.sql
+│   │   ├── 20260611203553_add_graduate_extended_fields
+│   │   │   └── migration.sql
+│   │   ├── 20260615155324_add_institutional_email_to_graduate
+│   │   │   └── migration.sql
+│   │   ├── 20260619154209_add_job_tracking_and_external_url
+│   │   │   └── migration.sql
+│   │   └── migration_lock.toml
+│   ├── schema.prisma
+│   └── seed.ts
+├── public
+│   ├── images
+│   │   ├── campus
+│   │   ├── events
+│   │   ├── faculties
+│   │   ├── hero
+│   │   ├── logos
+│   │   │   └── Logo_UNAP.png
+│   │   ├── news
+│   │   └── placeholders
+│   │       ├── campus.svg
+│   │       └── hero-bg.svg
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── reglamento
+│   └── main_v5.4_sistemas_v2.pdf
+├── src
+│   ├── app
+│   │   ├── (auth)
+│   │   │   ├── login
+│   │   │   │   └── page.tsx
+│   │   │   └── registro
+│   │   │       ├── page.tsx
+│   │   │       └── registro-form.tsx
+│   │   ├── (dashboard)
+│   │   │   ├── admin
+│   │   │   │   ├── bolsa-laboral
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── editar
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   ├── nueva
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── configuracion
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── egresados
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── encuestas
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── editar
+│   │   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   │   └── resultados
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   ├── nueva
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── postulaciones
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── reportes
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── coordinador
+│   │   │   │   ├── analitica
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── encuestas
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── practicas
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── director
+│   │   │   │   ├── analitica
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── reportes
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── egresado
+│   │   │   │   ├── empleos
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── encuestas
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── perfil
+│   │   │   │   │   ├── loading.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── escuela
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── (public)
+│   │   │   ├── empleos
+│   │   │   │   ├── [id]
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── api
+│   │   │   ├── admin
+│   │   │   │   ├── analytics
+│   │   │   │   │   ├── export
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── applications
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── status
+│   │   │   │   │   │       └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── graduates
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── jobs
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── toggle
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── reports
+│   │   │   │   │   └── pdf
+│   │   │   │   │       └── route.ts
+│   │   │   │   └── surveys
+│   │   │   │       ├── [id]
+│   │   │   │       │   ├── results
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   ├── toggle
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   └── route.ts
+│   │   │   │       └── route.ts
+│   │   │   ├── auth
+│   │   │   │   └── [...nextauth]
+│   │   │   │       └── route.ts
+│   │   │   ├── dashboard
+│   │   │   │   └── graduate
+│   │   │   │       └── route.ts
+│   │   │   ├── graduates
+│   │   │   │   └── me
+│   │   │   │       ├── work-experience
+│   │   │   │       │   ├── [id]
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   └── route.ts
+│   │   │   │       └── route.ts
+│   │   │   ├── jobs
+│   │   │   │   ├── [id]
+│   │   │   │   │   ├── apply
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── click
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── view
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── public
+│   │   │   │   └── schools
+│   │   │   │       └── route.ts
+│   │   │   └── surveys
+│   │   │       └── [id]
+│   │   │           ├── respond
+│   │   │           │   └── route.ts
+│   │   │           └── route.ts
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components
+│   │   ├── admin
+│   │   │   ├── analytics
+│   │   │   │   ├── analytics-filters.tsx
+│   │   │   │   ├── analytics-skeleton.tsx
+│   │   │   │   ├── applications-status-chart.tsx
+│   │   │   │   ├── employment-by-school-chart.tsx
+│   │   │   │   ├── employment-status-chart.tsx
+│   │   │   │   ├── export-buttons.tsx
+│   │   │   │   ├── faculty-chart.tsx
+│   │   │   │   ├── graduation-trend-chart.tsx
+│   │   │   │   ├── kpi-grid.tsx
+│   │   │   │   ├── sector-chart.tsx
+│   │   │   │   ├── survey-participation-chart.tsx
+│   │   │   │   └── top-employers-chart.tsx
+│   │   │   ├── applications
+│   │   │   │   ├── applications-list.tsx
+│   │   │   │   └── applications-skeleton.tsx
+│   │   │   ├── graduates
+│   │   │   │   ├── graduate-detail-skeleton.tsx
+│   │   │   │   ├── graduate-detail-view.tsx
+│   │   │   │   ├── graduates-filters.tsx
+│   │   │   │   ├── graduates-pagination.tsx
+│   │   │   │   ├── graduates-skeleton.tsx
+│   │   │   │   ├── graduates-stats.tsx
+│   │   │   │   └── graduates-table.tsx
+│   │   │   ├── jobs
+│   │   │   │   ├── job-form.tsx
+│   │   │   │   ├── jobs-list.tsx
+│   │   │   │   └── jobs-skeleton.tsx
+│   │   │   └── surveys
+│   │   │       ├── survey-builder.tsx
+│   │   │       ├── survey-results.tsx
+│   │   │       ├── surveys-list.tsx
+│   │   │       └── surveys-skeleton.tsx
+│   │   ├── auth
+│   │   │   ├── auth-context.tsx
+│   │   │   ├── auth-modal-provider.tsx
+│   │   │   ├── auth-modal.tsx
+│   │   │   ├── login-form.tsx
+│   │   │   └── register-form.tsx
+│   │   ├── dashboard
+│   │   │   ├── graduate
+│   │   │   │   ├── dashboard-skeleton.tsx
+│   │   │   │   ├── job-offers-list.tsx
+│   │   │   │   ├── pending-surveys.tsx
+│   │   │   │   ├── profile-card.tsx
+│   │   │   │   ├── recent-activity.tsx
+│   │   │   │   ├── stats-grid.tsx
+│   │   │   │   └── welcome-banner.tsx
+│   │   │   └── stat-card.tsx
+│   │   ├── jobs
+│   │   │   ├── apply-section.tsx
+│   │   │   ├── job-card.tsx
+│   │   │   ├── job-filters.tsx
+│   │   │   └── view-tracker.tsx
+│   │   ├── layout
+│   │   │   ├── dashboard-shell.tsx
+│   │   │   ├── dashboard-theme-provider.tsx
+│   │   │   ├── navbar.tsx
+│   │   │   └── sidebar.tsx
+│   │   ├── profile
+│   │   │   ├── profile-edit-form.tsx
+│   │   │   ├── profile-header.tsx
+│   │   │   ├── profile-info-cards.tsx
+│   │   │   ├── profile-skeleton.tsx
+│   │   │   ├── profile-view.tsx
+│   │   │   ├── theme-selector.tsx
+│   │   │   └── work-experience-section.tsx
+│   │   ├── public
+│   │   │   ├── about-section.tsx
+│   │   │   ├── benefits-section.tsx
+│   │   │   ├── cta-section.tsx
+│   │   │   ├── employers-bar.tsx
+│   │   │   ├── events-section.tsx
+│   │   │   ├── faculties-section.tsx
+│   │   │   ├── footer.tsx
+│   │   │   ├── hero-section.tsx
+│   │   │   ├── navbar.tsx
+│   │   │   ├── reveal.tsx
+│   │   │   └── stats-section.tsx
+│   │   ├── surveys
+│   │   │   ├── graduate-surveys-list.tsx
+│   │   │   └── survey-form.tsx
+│   │   ├── ui
+│   │   │   ├── alert.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   └── separator.tsx
+│   │   └── providers.tsx
+│   ├── generated
+│   │   └── prisma
+│   │       ├── runtime
+│   │       │   ├── edge-esm.js
+│   │       │   ├── edge.js
+│   │       │   ├── index-browser.d.ts
+│   │       │   ├── index-browser.js
+│   │       │   ├── library.d.ts
+│   │       │   ├── library.js
+│   │       │   ├── react-native.js
+│   │       │   └── wasm.js
+│   │       ├── default.d.ts
+│   │       ├── default.js
+│   │       ├── edge.d.ts
+│   │       ├── edge.js
+│   │       ├── index-browser.js
+│   │       ├── index.d.ts
+│   │       ├── index.js
+│   │       ├── libquery_engine-darwin-arm64.dylib.node
+│   │       ├── package.json
+│   │       ├── schema.prisma
+│   │       ├── wasm.d.ts
+│   │       └── wasm.js
+│   ├── hooks
+│   ├── lib
+│   │   ├── actions
+│   │   │   └── auth.actions.ts
+│   │   ├── services
+│   │   │   ├── admin-graduates.service.ts
+│   │   │   ├── analytics.service.ts
+│   │   │   ├── dashboard.service.ts
+│   │   │   ├── graduate.service.ts
+│   │   │   ├── jobs.service.ts
+│   │   │   ├── public.service.ts
+│   │   │   ├── surveys.service.ts
+│   │   │   └── work-experience.service.ts
+│   │   ├── validations
+│   │   │   ├── graduate.ts
+│   │   │   ├── job.ts
+│   │   │   ├── survey.ts
+│   │   │   └── work-experience.ts
+│   │   ├── auth.ts
+│   │   ├── prisma.ts
+│   │   └── utils.ts
+│   ├── store
+│   └── types
+│       ├── graduate.ts
+│       ├── index.ts
+│       └── next-auth.d.ts
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── components.json
+├── credenciales_prueba.txt
+├── eslint.config.mjs
+├── estructura_proyecto.txt
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── tsconfig.json
+└── tsconfig.tsbuildinfo
+
+122 directories, 259 files

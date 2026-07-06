@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum Role {
+  ADMIN                // Administrador del sistema — Comisión de Seguimiento al Egresado
+  GRADUATE             // Egresado registrado en la plataforma
+  DIRECTOR             // Director de Escuela Profesional (Art. 21 del Reglamento)
+  PRACTICE_COORDINATOR // Coordinador de Prácticas Profesionales
+  SCHOOL               // Obsoleto — no asignar a nuevos usuarios (usa DIRECTOR o PRACTICE_COORDINATOR)
+}
+
+enum EmploymentStatus {
+  EMPLOYED      // Empleado en relación de dependencia
+  SELF_EMPLOYED // Independiente / emprendedor
+  UNEMPLOYED    // Desempleado
+  SEEKING       // Buscando empleo activamente
+  STUDYING      // Estudiando (posgrado, segunda carrera, etc.)
+}
+
+enum JobType {
+  FULL_TIME               // Empleo a tiempo completo
+  PART_TIME               // Empleo a medio tiempo
+  CONTRACT                // Empleo por contrato / proyecto
+  INTERNSHIP              // Prácticas preprofesionales
+  PROFESSIONAL_INTERNSHIP // Prácticas profesionales
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTENTICACIÓN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Entidad base de autenticación. La contraseña se agregará en Fase 3 (NextAuth).
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?  // nullable hasta implementar NextAuth en Fase 3
+  role      Role     @default(GRADUATE)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones (cada User puede tener UN perfil según su rol)
+  graduate Graduate?
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ESTRUCTURA INSTITUCIONAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Unidad académica de nivel superior (ej: Facultad de Ingeniería)
+model Faculty {
+  id      String   @id @default(cuid())
+  name    String
+  code    String   @unique  // ej: "FI", "FCCA", "FCE"
+  schools School[]
+}
+
+// Programa académico dentro de una facultad (ej: Ingeniería de Sistemas)
+model School {
+  id        String     @id @default(cuid())
+  name      String
+  code      String     @unique  // ej: "IS", "IC", "CONT"
+  facultyId String
+
+  faculty   Faculty    @relation(fields: [facultyId], references: [id])
+  graduates Graduate[]
+  surveys   Survey[]   // Encuestas propias de la escuela
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EGRESADO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Graduate {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  schoolId         String
+  dni              String           @unique
+  firstName        String
+  lastName         String           // Apellido paterno
+  secondLastName   String?          // Apellido materno
+  phone            String?
+  birthDate        DateTime?
+  institutionalEmail String?         // Correo institucional EPIS (ej: 20201234@est.unap.edu.pe)
+  personalEmail    String?          // Correo personal (ej: juan@gmail.com)
+  maritalStatus    String?          // Estado civil: "Soltero/a", "Casado/a", etc.
+  enrollmentCode   String?          // Código de matrícula universitario (ej: "143919")
+  admissionPeriod  String?          // Año-semestre de ingreso (ej: "2014-II")
+  graduationYear   Int              // Año en que egresó (ej: 2020)
+  graduationSemester String?        // Semestre de egreso: "I" o "II"
+  firstEnrollmentPeriod String?     // Período de primera matrícula (ej: "2014-II")
+  degree           String           // Título obtenido (ej: "Ingeniero de Sistemas")
+  photo            String?          // URL de la foto de perfil
+  cvUrl            String?          // URL del CV en PDF (Cloudinary en Fase 3)
+  linkedinUrl      String?
+  bio              String?          // Descripción personal corta
+  employmentStatus EmploymentStatus @default(SEEKING)
+  currentPosition  String?          // Cargo actual (si está empleado)
+  currentCompany   String?          // Empresa actual (si está empleado)
+  city             String?
+  country          String           @default("Perú")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school           School           @relation(fields: [schoolId], references: [id])
+  workExperiences  WorkExperience[]
+  surveyResponses  SurveyResponse[]
+  applications     JobApplication[]
+
+  @@index([schoolId])               // Búsquedas frecuentes por escuela
+  @@index([employmentStatus])       // Filtro por estado laboral
+  @@index([graduationYear])         // Reportes por año de egreso
+}
+
+// Historial de experiencia laboral del egresado
+model WorkExperience {
+  id          String    @id @default(cuid())
+  graduateId  String
+  company     String
+  position    String
+  startDate   DateTime
+  endDate     DateTime? // null si es el empleo actual
+  isCurrent   Boolean   @default(false)
+  description String?
+  location    String?
+
+  graduate    Graduate  @relation(fields: [graduateId], references: [id], onDelete: Cascade)
+
+  @@index([graduateId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENCUESTAS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Encuesta creada por administrador o escuela profesional
+model Survey {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  schoolId    String?          // null = encuesta global para todos los egresados
+  isGlobal    Boolean          @default(false)
+  isActive    Boolean          @default(true)
+  endsAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  school      School?          @relation(fields: [schoolId], references: [id])
+  questions   SurveyQuestion[]
+  responses   SurveyResponse[]
+}
+
+// Pregunta individual dentro de una encuesta
+model SurveyQuestion {
+  id       String         @id @default(cuid())
+  surveyId String
+  text     String
+  // Tipos: "text" | "textarea" | "single" | "multiple" | "rating" | "yesno"
+  type     String
+  // Opciones para preguntas de selección: ["Opción A", "Opción B", ...]
+  options  Json?
+  required Boolean        @default(true)
+  order    Int             // Orden de aparición en el formulario
+
+  survey   Survey         @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  answers  SurveyAnswer[]
+
+  @@index([surveyId])
+}
+
+// Registro de que un egresado completó una encuesta
+model SurveyResponse {
+  id          String         @id @default(cuid())
+  surveyId    String
+  graduateId  String
+  completedAt DateTime       @default(now())
+
+  survey      Survey         @relation(fields: [surveyId], references: [id])
+  graduate    Graduate       @relation(fields: [graduateId], references: [id])
+  answers     SurveyAnswer[]
+
+  // Un egresado solo puede responder cada encuesta una vez
+  @@unique([surveyId, graduateId])
+}
+
+// Respuesta individual a una pregunta específica
+model SurveyAnswer {
+  id         String         @id @default(cuid())
+  responseId String
+  questionId String
+  // Almacena: texto (string), número (rating), array (multi-opción)
+  value      Json
+
+  response   SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question   SurveyQuestion @relation(fields: [questionId], references: [id])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BOLSA LABORAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Empresa que publica ofertas laborales
+model Company {
+  id          String     @id @default(cuid())
+  name        String
+  ruc         String?    @unique
+  sector      String?    // ej: "Tecnología", "Gobierno", "Construcción"
+  logo        String?
+  website     String?
+  description String?
+  isVerified  Boolean    @default(false) // Verificación manual por admin
+  createdAt   DateTime   @default(now())
+
+  jobs        JobOffer[]
+}
+
+// Oferta laboral publicada por una empresa
+model JobOffer {
+  id           String           @id @default(cuid())
+  companyId    String
+  title        String
+  description  String
+  requirements String?
+  location     String?
+  type         JobType          @default(FULL_TIME)
+  modality     String?          // "PRESENTIAL" | "HYBRID" | "REMOTE"
+  salary       String?          // Rango salarial como texto (ej: "S/. 3,000 - 5,000")
+  isRemote     Boolean          @default(false)
+  isActive     Boolean          @default(true)
+  externalUrl  String?          // Enlace externo de postulación
+  viewCount    Int              @default(0)
+  expiresAt    DateTime?
+  createdAt    DateTime         @default(now())
+
+  company      Company          @relation(fields: [companyId], references: [id])
+  applications JobApplication[]
+  clicks       JobClick[]
+
+  @@index([isActive])
+}
+
+// Registro de clic en enlace externo de una oferta
+model JobClick {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String?  // null si usuario no autenticado
+  clickedAt DateTime @default(now())
+
+  job       JobOffer @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([clickedAt])
+}
+
+// Postulación de un egresado a una oferta laboral
+model JobApplication {
+  id          String    @id @default(cuid())
+  jobId       String
+  graduateId  String
+  coverLetter String?
+  // Estados: "PENDING" | "REVIEWED" | "INTERVIEW" | "ACCEPTED" | "REJECTED"
+  status      String    @default("PENDING")
+  appliedAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  job         JobOffer  @relation(fields: [jobId], references: [id])
+  graduate    Graduate  @relation(fields: [graduateId], references: [id])
+
+  // Un egresado no puede postularse dos veces a la misma oferta
+  @@unique([jobId, graduateId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PLATAFORMA VIRTUAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Eventos institucionales (graduaciones, ferias, talleres, etc.)
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  location    String?
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
